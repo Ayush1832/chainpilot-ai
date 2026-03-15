@@ -51,12 +51,17 @@ app.get('/api/health', (_req, res) => {
 });
 
 // ── API Routes ──
-// These will be added in Phase 4
-// app.use('/api/chat', chatLimiter, chatRouter);
-// app.use('/api/wallet', walletRouter);
-// app.use('/api/transaction', transactionRouter);
-// app.use('/api/token', tokenRouter);
-// app.use('/api/defi', defiRouter);
+import chatRouter from './routes/chat';
+import walletRouter from './routes/wallet';
+import transactionRouter from './routes/transaction';
+import tokenRouter from './routes/token';
+import defiRouter from './routes/defi';
+
+app.use('/api/chat', chatRouter);
+app.use('/api/wallet', walletRouter);
+app.use('/api/transaction', transactionRouter);
+app.use('/api/token', tokenRouter);
+app.use('/api/defi', defiRouter);
 
 // ── 404 Handler ──
 app.use('/api/*', (_req, res) => {
