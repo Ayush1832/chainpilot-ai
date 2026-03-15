@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  chainpilot-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chainpilot-backend
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    networks:
+      - chainpilot-net
+
+  chainpilot-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: chainpilot-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000/api
+    depends_on:
+      - chainpilot-backend
+    restart: unless-stopped
+    networks:
+      - chainpilot-net
+
+networks:
+  chainpilot-net:
+    driver: bridge

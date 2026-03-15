@@ -1,0 +1,36 @@
+﻿
+> frontend@0.1.0 lint
+> eslint
+
+
+C:\Users\LENOVO\Desktop\chainpilot-ai\frontend\src\app\chat\page.tsx
+    9:31  warning  'X' is defined but never used             @typescript-eslint/no-unused-vars
+   17:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   24:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  247:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Desktop\chainpilot-ai\frontend\src\components\ChatMessage.tsx
+  16:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Desktop\chainpilot-ai\frontend\src\components\ConfirmationModal.tsx
+   7:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:3   warning  'txId' is defined but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\LENOVO\Desktop\chainpilot-ai\frontend\src\components\TokenRiskCard.tsx
+    6:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Desktop\chainpilot-ai\frontend\src\components\TransactionSummary.tsx
+   6:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Desktop\chainpilot-ai\frontend\src\components\WalletReport.tsx
+    7:3   warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+   13:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 17 problems (14 errors, 3 warnings)
+
