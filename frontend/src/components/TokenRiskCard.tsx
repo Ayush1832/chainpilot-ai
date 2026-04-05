@@ -1,27 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 interface TokenRiskCardProps {
-  data: Record<string, unknown>;
+  data: Record<string, any>;
 }
 
 export function TokenRiskCard({ data }: TokenRiskCardProps) {
   const score = Number(data.riskScore) || 0;
-  const scoreColor =
-    score <= 3 ? '#00cec9' : score <= 6 ? '#fdcb6e' : '#e17055';
-  const scoreLabel =
-    score <= 3 ? 'LOW RISK' : score <= 6 ? 'MEDIUM RISK' : 'HIGH RISK';
-  const badgeClass =
-    score <= 3 ? 'badge-low' : score <= 6 ? 'badge-medium' : 'badge-high';
+  const scoreColor = score <= 3 ? '#00cec9' : score <= 6 ? '#fdcb6e' : '#e17055';
+  const scoreLabel = score <= 3 ? 'LOW RISK' : score <= 6 ? 'MEDIUM RISK' : 'HIGH RISK';
+  const badgeClass = score <= 3 ? 'badge-low' : score <= 6 ? 'badge-medium' : 'badge-high';
 
-  const recommendation = String(data.recommendation || 'CAUTION');
+  const recommendation = String(data.recommendation ?? 'CAUTION');
   const recColor =
-    recommendation === 'SAFE'
-      ? '#00cec9'
-      : recommendation === 'CAUTION'
-        ? '#fdcb6e'
-        : '#e17055';
+    recommendation === 'SAFE' ? '#00cec9' : recommendation === 'CAUTION' ? '#fdcb6e' : '#e17055';
+
+  const risks: any[] = Array.isArray(data.risks) ? data.risks : [];
+  const topHolders: any[] = Array.isArray(data.topHolders) ? data.topHolders : [];
 
   return (
     <div className="bg-(--bg-secondary) border border-(--border) rounded-xl overflow-hidden">
@@ -37,10 +34,10 @@ export function TokenRiskCard({ data }: TokenRiskCardProps) {
       {/* Token Info */}
       <div className="px-4 py-3 border-b border-(--border)">
         <p className="text-base font-semibold">
-          {String(data.name || 'Unknown')}{' '}
-          <span className="text-(--text-secondary)">({String(data.symbol || '?')})</span>
+          {String(data.name ?? 'Unknown')}{' '}
+          <span className="text-(--text-secondary)">({String(data.symbol ?? '?')})</span>
         </p>
-        {Boolean(data.address) && (
+        {data.address != null && (
           <p className="font-mono text-xs text-(--text-secondary) mt-0.5 truncate">
             {String(data.address)}
           </p>
@@ -58,17 +55,13 @@ export function TokenRiskCard({ data }: TokenRiskCardProps) {
         <div className="risk-bar">
           <div
             className="risk-bar-fill"
-            style={{
-              width: `${score * 10}%`,
-              background: scoreColor,
-            }}
+            style={{ width: `${score * 10}%`, background: scoreColor }}
           />
         </div>
       </div>
 
       {/* Risk Details */}
       <div className="px-4 py-3 border-b border-(--border) space-y-2">
-        {/* Dangerous patterns */}
         {data.hasMintFunction != null && (
           <RiskRow
             isRisky={Boolean(data.hasMintFunction)}
@@ -93,24 +86,25 @@ export function TokenRiskCard({ data }: TokenRiskCardProps) {
             label={data.liquidityLocked ? 'Liquidity is locked' : 'Liquidity NOT locked'}
           />
         )}
-
-        {/* Additional risks */}
-        {(data.risks as Array<{severity: string, description: string}> || []).map((risk, i: number) => (
+        {risks.map((risk: any, i: number) => (
           <RiskRow key={i} isRisky={risk.severity !== 'low'} label={risk.description} />
         ))}
       </div>
 
       {/* Top Holders */}
-      {(data.topHolders as unknown[])?.length > 0 && (
+      {topHolders.length > 0 && (
         <div className="px-4 py-3 border-b border-(--border)">
           <p className="text-xs text-(--text-secondary) mb-2">Top Holders</p>
-          {(data.topHolders as Array<{address: string, percentage: number}> || []).slice(0, 3).map((holder, i: number) => (
+          {topHolders.slice(0, 3).map((holder: any, i: number) => (
             <div key={i} className="flex justify-between text-xs mb-1">
               <span className="font-mono text-(--text-secondary) truncate mr-2">
-                {holder.address?.slice(0, 10)}...{holder.address?.slice(-6)}
+                {String(holder.address ?? '').slice(0, 10)}...{String(holder.address ?? '').slice(-6)}
               </span>
-              <span className="font-medium" style={{ color: holder.percentage > 30 ? '#e17055' : '#a0a0b0' }}>
-                {holder.percentage?.toFixed(1)}%
+              <span
+                className="font-medium"
+                style={{ color: Number(holder.percentage) > 30 ? '#e17055' : '#a0a0b0' }}
+              >
+                {Number(holder.percentage).toFixed(1)}%
               </span>
             </div>
           ))}
@@ -134,7 +128,7 @@ function RiskRow({ isRisky, label }: { isRisky: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2 text-sm">
       {isRisky ? (
-        <XCircle className="w-4 h-4 text-(--text-secondary) shrink-0" />
+        <XCircle className="w-4 h-4 text-[#e17055] shrink-0" />
       ) : (
         <CheckCircle className="w-4 h-4 text-(--accent-primary) shrink-0" />
       )}

@@ -36,6 +36,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-[#0a0a0f] text-[#f5f5f5]`}
+        suppressHydrationWarning
       >
         <Providers>{children}</Providers>
       </body>

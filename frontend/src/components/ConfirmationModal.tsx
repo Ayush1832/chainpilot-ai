@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { AlertTriangle, X, Send, Ban } from 'lucide-react';
 
 interface ConfirmationModalProps {
   txId: string;
-  details: Record<string, unknown>;
+  details: Record<string, any>;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -18,9 +19,7 @@ export function ConfirmationModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
       <div
         className="relative w-full max-w-md mx-4 bg-(--bg-secondary) border border-(--border) rounded-2xl shadow-2xl overflow-hidden"
-        style={{
-          animation: 'message-in 0.2s ease-out',
-        }}
+        style={{ animation: 'message-in 0.2s ease-out' }}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-(--border) flex items-center justify-between">
@@ -38,41 +37,33 @@ export function ConfirmationModal({
 
         {/* Details */}
         <div className="px-6 py-4 space-y-3">
-          {Boolean(details.type) && (
+          {details.type != null && (
             <DetailRow label="Type" value={String(details.type).replace(/_/g, ' ').toUpperCase()} />
           )}
-          {Boolean(details.to) && (
-            <DetailRow
-              label="To"
-              value={String(details.to)}
-              mono
-            />
+          {details.to != null && (
+            <DetailRow label="To" value={String(details.to)} mono />
           )}
-          {Boolean(details.toEns) && (
-            <DetailRow
-              label="ENS"
-              value={String(details.toEns)}
-              accent
-            />
+          {details.toEns != null && (
+            <DetailRow label="ENS" value={String(details.toEns)} accent />
           )}
-          {Boolean(details.amount) && (
+          {details.amount != null && (
             <DetailRow
               label="Amount"
-              value={`${String(details.amount)} ${String(details.token || 'ETH')}`}
+              value={`${String(details.amount)} ${String(details.token ?? 'ETH')}`}
               highlight
             />
           )}
-          {Boolean(details.estimatedGas) && (
+          {details.estimatedGas != null && (
             <DetailRow
               label="Est. Gas"
               value={`~${String(details.estimatedGas)} ETH${
-                details.estimatedGasUsd
+                details.estimatedGasUsd != null
                   ? ` ($${Number(details.estimatedGasUsd).toFixed(2)})`
                   : ''
               }`}
             />
           )}
-          {Boolean(details.network) && (
+          {details.network != null && (
             <DetailRow label="Network" value={String(details.network)} />
           )}
         </div>
@@ -96,7 +87,7 @@ export function ConfirmationModal({
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 bg-(--bg-secondary) hover:bg-(--bg-tertiary)/80 text-(--text-secondary) font-semibold py-3 rounded-full flex items-center justify-center gap-2 transition"
+            className="flex-1 bg-(--accent-primary) hover:opacity-90 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition"
           >
             <Send className="w-4 h-4" />
             Confirm
@@ -124,13 +115,15 @@ function DetailRow({
     <div className="flex justify-between items-start">
       <span className="text-sm text-(--text-secondary)">{label}</span>
       <span
-        className={`
-          text-sm text-right max-w-[65%] truncate
-          ${mono ? 'font-mono text-xs' : ''}
-          ${accent ? 'text-(--text-secondary)' : ''}
-          ${highlight ? 'font-semibold text-foreground' : ''}
-          ${!accent && !highlight ? 'text-foreground' : ''}
-        `}
+        className={[
+          'text-sm text-right max-w-[65%] truncate',
+          mono ? 'font-mono text-xs' : '',
+          accent ? 'text-(--text-secondary)' : '',
+          highlight ? 'font-semibold text-foreground' : '',
+          !accent && !highlight ? 'text-foreground' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
         {value}
       </span>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import ReactMarkdown from 'react-markdown';
@@ -13,7 +14,7 @@ interface ChatMessageProps {
     content: string;
     metadata?: {
       component?: string;
-      data?: Record<string, unknown>;
+      data?: Record<string, any>;
     };
     timestamp: string;
   };

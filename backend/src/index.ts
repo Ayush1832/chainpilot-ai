@@ -64,7 +64,7 @@ app.use('/api/token', tokenRouter);
 app.use('/api/defi', defiRouter);
 
 // ── 404 Handler ──
-app.use('/api/*', (_req, res) => {
+app.use('/api/*path', (_req, res) => {
   res.status(404).json({
     error: {
       code: 'NOT_FOUND',

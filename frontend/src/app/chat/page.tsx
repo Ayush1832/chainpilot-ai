@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAccount } from 'wagmi';
@@ -14,14 +15,14 @@ interface Message {
   content: string;
   metadata?: {
     component?: string;
-    data?: Record<string, unknown>;
+    data?: Record<string, any>;
   };
   timestamp: string;
 }
 
 interface PendingTx {
   txId: string;
-  details: Record<string, unknown>;
+  details: Record<string, any>;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';

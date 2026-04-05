@@ -1,26 +1,251 @@
 @import "tailwindcss";
 
+/* ============================================================
+   ChainPilot AI — Global Styles
+   Dark theme with glassmorphism design system
+   ============================================================ */
+
+/* ── CSS Custom Properties ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background layers */
+  --background: #0a0a0f;
+  --foreground: #f0f0f5;
+
+  --bg-secondary: #14142a;
+  --bg-tertiary: #1e1e3a;
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* Accent */
+  --accent-primary: #6c5ce7;
+
+  /* Text */
+  --text-secondary: #8888a8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base ── */
+* {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter, Arial, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(108, 92, 231, 0.3);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(108, 92, 231, 0.5);
+}
+
+/* ── Glass Card ── */
+.glass-card {
+  background: rgba(20, 20, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+/* ── Modal Backdrop ── */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Risk Bar ── */
+.risk-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.risk-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ── Badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-low {
+  background: rgba(0, 206, 201, 0.12);
+  color: #00cec9;
+}
+
+.badge-medium {
+  background: rgba(253, 203, 110, 0.12);
+  color: #fdcb6e;
+}
+
+.badge-high {
+  background: rgba(225, 112, 85, 0.12);
+  color: #e17055;
+}
+
+.badge-critical {
+  background: rgba(214, 48, 49, 0.12);
+  color: #d63031;
+}
+
+/* ── Buttons ── */
+.btn-outline {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--foreground);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Typing Indicator ── */
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  animation: typing-pulse 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Message Animation ── */
+.message-animate {
+  animation: message-in 0.25s ease-out;
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Sidebar Transition ── */
+.sidebar-transition {
+  transition: transform 0.25s ease-in-out;
+}
+
+/* ── Gradient Text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Prose overrides for dark mode ── */
+.prose {
+  color: var(--foreground);
+}
+
+.prose strong {
+  color: var(--foreground);
+}
+
+.prose code {
+  color: #a29bfe;
+  background: rgba(162, 155, 254, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.prose pre {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+}
+
+.prose a {
+  color: #a29bfe;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  color: var(--foreground);
+}
+
+.prose ul,
+.prose ol {
+  color: var(--text-secondary);
+}
+
+.prose li::marker {
+  color: var(--accent-primary);
+}
+
+.prose blockquote {
+  border-left-color: var(--accent-primary);
+  color: var(--text-secondary);
+}
+
+.prose hr {
+  border-color: var(--border);
 }

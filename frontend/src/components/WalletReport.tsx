@@ -1,15 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import {
-  Wallet,
-  TrendingUp,
-  Shield,
-  Copy,
-  Image as ImageIcon,
-} from 'lucide-react';
+import { Wallet, TrendingUp, Shield, Copy, Image as ImageIcon } from 'lucide-react';
 
 interface WalletReportProps {
-  data: Record<string, unknown>;
+  data: Record<string, any>;
 }
 
 export function WalletReport({ data }: WalletReportProps) {
@@ -20,12 +15,16 @@ export function WalletReport({ data }: WalletReportProps) {
     Critical: '#d63031',
   };
 
-  const riskLevel = String(data.riskLevel || 'Medium');
-  const riskColor = riskColors[riskLevel] || '#fdcb6e';
+  const riskLevel = String(data.riskLevel ?? 'Medium');
+  const riskColor = riskColors[riskLevel] ?? '#fdcb6e';
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(String(data.address || ''));
+    navigator.clipboard.writeText(String(data.address ?? ''));
   };
+
+  const tokens: any[] = Array.isArray(data.tokens) ? data.tokens : [];
+  const nfts: any[] = Array.isArray(data.nfts) ? data.nfts : [];
+  const defiProtocols: string[] = Array.isArray(data.defiProtocols) ? data.defiProtocols : [];
 
   return (
     <div className="bg-(--bg-secondary) border border-(--border) rounded-xl overflow-hidden">
@@ -49,12 +48,12 @@ export function WalletReport({ data }: WalletReportProps) {
           </button>
         </div>
         <p className="font-mono text-sm text-foreground mt-0.5 truncate">
-          {String(data.address)}
+          {String(data.address ?? '')}
         </p>
-        {Boolean(data.ensName) && (
+        {data.ensName != null && (
           <p className="text-sm text-(--text-secondary)">{String(data.ensName)}</p>
         )}
-        {Boolean(data.behaviorProfile) && (
+        {data.behaviorProfile != null && (
           <p className="text-xs text-(--text-secondary) mt-1">
             Category: <span className="text-foreground">{String(data.behaviorProfile)}</span>
           </p>
@@ -73,7 +72,7 @@ export function WalletReport({ data }: WalletReportProps) {
           <div className="flex justify-between items-center">
             <span className="text-sm">ETH</span>
             <div className="text-right">
-              <span className="text-sm font-medium">{String(data.ethBalance || '0')}</span>
+              <span className="text-sm font-medium">{String(data.ethBalance ?? '0')}</span>
               {data.ethBalanceUsd != null && (
                 <span className="text-xs text-(--text-secondary) ml-2">
                   ${Number(data.ethBalanceUsd).toLocaleString()}
@@ -83,9 +82,9 @@ export function WalletReport({ data }: WalletReportProps) {
           </div>
 
           {/* Token list */}
-          {(data.tokens as Array<{symbol?: string, name?: string, balance: string, usdValue?: number}> || []).slice(0, 5).map((token, i: number) => (
+          {tokens.slice(0, 5).map((token: any, i: number) => (
             <div key={i} className="flex justify-between items-center">
-              <span className="text-sm text-(--text-secondary)">{token.symbol || token.name}</span>
+              <span className="text-sm text-(--text-secondary)">{token.symbol ?? token.name}</span>
               <div className="text-right">
                 <span className="text-sm">{token.balance}</span>
                 {token.usdValue != null && (
@@ -100,18 +99,18 @@ export function WalletReport({ data }: WalletReportProps) {
       </div>
 
       {/* NFTs */}
-      {(data.nfts as unknown[])?.length > 0 && (
+      {nfts.length > 0 && (
         <div className="px-4 py-3 border-b border-(--border)">
           <div className="flex items-center gap-2 mb-2">
             <ImageIcon className="w-3.5 h-3.5 text-(--accent-primary)" />
             <span className="text-xs font-semibold text-(--text-secondary)">
-              NFTs ({(data.nfts as unknown[])?.length || 0})
+              NFTs ({nfts.length})
             </span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {(data.nfts as Array<{name?: string, collection?: string}> || []).slice(0, 5).map((nft, i: number) => (
+            {nfts.slice(0, 5).map((nft: any, i: number) => (
               <span key={i} className="text-xs bg-(--bg-secondary) px-2 py-1 rounded">
-                {nft.name || nft.collection}
+                {nft.name ?? nft.collection}
               </span>
             ))}
           </div>
@@ -127,17 +126,17 @@ export function WalletReport({ data }: WalletReportProps) {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <p className="text-xs text-(--text-secondary)">Transactions</p>
-            <p className="text-sm font-medium">{String(data.transactionCount || 0)}</p>
+            <p className="text-sm font-medium">{String(data.transactionCount ?? 0)}</p>
           </div>
           <div>
             <p className="text-xs text-(--text-secondary)">DeFi Protocols</p>
-            <p className="text-sm font-medium">{(data.defiProtocols as unknown[])?.length || 0}</p>
+            <p className="text-sm font-medium">{defiProtocols.length}</p>
           </div>
         </div>
-        {(data.defiProtocols as unknown[])?.length > 0 && (
+        {defiProtocols.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {(data.defiProtocols as string[]).map((p: string, i: number) => (
-              <span key={i} className="text-xs bg-(--bg-secondary)/10 text-(--text-secondary) px-2 py-0.5 rounded-full">
+            {defiProtocols.map((p: string, i: number) => (
+              <span key={i} className="text-xs bg-(--bg-tertiary) text-(--text-secondary) px-2 py-0.5 rounded-full">
                 {p}
               </span>
             ))}
