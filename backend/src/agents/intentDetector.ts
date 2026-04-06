@@ -5,7 +5,7 @@
 // agent invocation. Enables pre-validation and analytics.
 // ============================================================
 
-import { ChatOpenAI } from '@langchain/openai';
+import { ChatGroq } from '@langchain/groq';
 import { INTENT_DETECTION_PROMPT } from './prompts/intentDetection';
 import { IntentResult, IntentType } from '../types';
 import { ethers } from 'ethers';
@@ -29,11 +29,11 @@ const VALID_INTENTS: IntentType[] = [
  */
 export async function detectIntent(message: string): Promise<IntentResult> {
   try {
-    const llm = new ChatOpenAI({
-      modelName: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+    const llm = new ChatGroq({
+      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       temperature: 0,
       maxTokens: 256,
-      openAIApiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.GROQ_API_KEY,
     });
 
     const prompt = INTENT_DETECTION_PROMPT.replace('{message}', message);

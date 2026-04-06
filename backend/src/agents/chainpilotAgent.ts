@@ -8,7 +8,7 @@
 // - Intent pre-detection and validation
 // ============================================================
 
-import { ChatOpenAI } from '@langchain/openai';
+import { ChatGroq } from '@langchain/groq';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import {
   AIMessage,
@@ -231,11 +231,11 @@ const agentTools: DynamicStructuredTool[] = [
  * Create the LLM with bound tools (OpenAI function calling)
  */
 function createToolCallingLLM() {
-  const llm = new ChatOpenAI({
-    modelName: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+  const llm = new ChatGroq({
+    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
     temperature: 0.3,
     maxTokens: 2048,
-    openAIApiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.GROQ_API_KEY,
   });
 
   // Bind tools to the model for function calling

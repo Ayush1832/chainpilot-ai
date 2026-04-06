@@ -10,11 +10,17 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests"
   },
-  "keywords": ["blockchain", "ai", "ethereum", "langchain"],
+  "keywords": [
+    "blockchain",
+    "ai",
+    "ethereum",
+    "langchain"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@langchain/core": "^1.1.32",
+    "@langchain/groq": "^1.2.0",
     "@langchain/openai": "^1.2.13",
     "@supabase/supabase-js": "^2.99.1",
     "cors": "^2.8.6",
