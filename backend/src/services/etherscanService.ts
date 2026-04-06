@@ -13,7 +13,7 @@
 //   getERC20TransfersByTx(hash)   → Token transfers in a tx
 // ============================================================
 
-const BASE_URL = 'https://api.etherscan.io/api';
+const BASE_URL = 'https://api.etherscan.io/v2/api';
 
 interface QueueItem {
   resolve: (value: any) => void;
@@ -53,7 +53,8 @@ class EtherscanRateLimiter {
         const apiKey = process.env.ETHERSCAN_API_KEY;
         if (!apiKey) throw new Error('ETHERSCAN_API_KEY is not set');
 
-        const queryParams = new URLSearchParams({ ...item.params, apikey: apiKey });
+        // V2 API requires chainid (1 = Ethereum mainnet)
+        const queryParams = new URLSearchParams({ chainid: '1', ...item.params, apikey: apiKey });
         const url = `${BASE_URL}?${queryParams.toString()}`;
 
         const response = await fetch(url);
