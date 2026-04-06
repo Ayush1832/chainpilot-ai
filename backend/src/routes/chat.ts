@@ -100,7 +100,7 @@ router.get('/conversations', async (req: Request, res: Response): Promise<void> 
 
   try {
     const user = await supabaseService.findOrCreateUser(walletAddress);
-    const conversations = await supabaseService.getConversation(user.id);
+    const conversations = await supabaseService.listConversations(user.id);
 
     res.json({ conversations });
   } catch (error: any) {

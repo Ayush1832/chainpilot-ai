@@ -8,6 +8,7 @@ import Link from 'next/link';
 interface SidebarProps {
   conversationId: string | null;
   onNewChat: () => void;
+  onSelectConversation: (id: string) => void;
   onClose: () => void;
   walletAddress?: string;
 }
@@ -15,15 +16,20 @@ interface SidebarProps {
 interface ConversationItem {
   id: string;
   title: string | null;
-  updatedAt: string;
+  updated_at: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-export function Sidebar({ conversationId, onNewChat, onClose, walletAddress }: SidebarProps) {
+export function Sidebar({
+  conversationId,
+  onNewChat,
+  onSelectConversation,
+  onClose,
+  walletAddress,
+}: SidebarProps) {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
 
-  // Fetch conversations
   useEffect(() => {
     if (!walletAddress) return;
 
@@ -73,7 +79,11 @@ export function Sidebar({ conversationId, onNewChat, onClose, walletAddress }: S
 
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto px-3 space-y-1">
-        {conversations.length === 0 ? (
+        {!walletAddress ? (
+          <p className="text-xs text-(--text-secondary) text-center mt-8 px-4">
+            Connect your wallet to see chat history.
+          </p>
+        ) : conversations.length === 0 ? (
           <p className="text-xs text-(--text-secondary) text-center mt-8 px-4">
             No conversations yet. Start chatting!
           </p>
@@ -81,11 +91,15 @@ export function Sidebar({ conversationId, onNewChat, onClose, walletAddress }: S
           conversations.map((conv) => (
             <button
               key={conv.id}
+              onClick={() => {
+                onSelectConversation(conv.id);
+                onClose();
+              }}
               className={`
                 w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition
                 ${
                   conv.id === conversationId
-                    ? 'bg-(--bg-secondary) text-foreground'
+                    ? 'bg-(--bg-tertiary) text-foreground'
                     : 'text-(--text-secondary) hover:bg-(--bg-tertiary)/50 hover:text-foreground'
                 }
               `}

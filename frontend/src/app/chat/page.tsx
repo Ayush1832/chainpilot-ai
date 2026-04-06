@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAccount } from 'wagmi';
@@ -34,6 +34,7 @@ function ChatPageInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingTx, setPendingTx] = useState<PendingTx | null>(null);
@@ -41,7 +42,6 @@ function ChatPageInner() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -57,6 +57,35 @@ function ChatPageInner() {
       setInput(q);
     }
   }, [searchParams, messages.length]);
+
+  // Load a conversation's full message history
+  const loadConversation = useCallback(async (id: string) => {
+    setIsLoadingHistory(true);
+    setMessages([]);
+    setConversationId(id);
+
+    try {
+      const res = await fetch(`${API_BASE}/chat/${id}`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const loaded: Message[] = (data.messages || [])
+        .filter((m: any) => m.role === 'user' || m.role === 'assistant')
+        .map((m: any) => ({
+          id: m.id,
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+          metadata: m.metadata?.component ? m.metadata : undefined,
+          timestamp: m.created_at,
+        }));
+
+      setMessages(loaded);
+    } catch {
+      // Silently fail — keep empty state
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);
 
   // Send message
   const sendMessage = async () => {
@@ -74,16 +103,10 @@ function ChatPageInner() {
     setInput('');
     setIsStreaming(true);
 
-    // Placeholder for assistant message
     const assistantId = `assistant-${Date.now()}`;
     setMessages((prev) => [
       ...prev,
-      {
-        id: assistantId,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date().toISOString(),
-      },
+      { id: assistantId, role: 'assistant', content: '', timestamp: new Date().toISOString() },
     ]);
 
     try {
@@ -93,18 +116,13 @@ function ChatPageInner() {
           'Content-Type': 'application/json',
           ...(address ? { 'X-Wallet-Address': address } : {}),
         },
-        body: JSON.stringify({
-          message: trimmed,
-          conversationId,
-          walletAddress: address,
-        }),
+        body: JSON.stringify({ message: trimmed, conversationId, walletAddress: address }),
       });
 
       if (!response.ok) throw new Error('Failed to send message');
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-
       if (!reader) throw new Error('No response body');
 
       let buffer = '';
@@ -114,29 +132,21 @@ function ChatPageInner() {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-
-        // Parse SSE lines
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-
           try {
             const event = JSON.parse(line.slice(6));
-
             switch (event.type) {
               case 'text':
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === assistantId
-                      ? { ...m, content: event.content || '' }
-                      : m
+                    m.id === assistantId ? { ...m, content: event.content || '' } : m
                   )
                 );
-                if (event.conversationId) {
-                  setConversationId(event.conversationId);
-                }
+                if (event.conversationId) setConversationId(event.conversationId);
                 break;
 
               case 'structured':
@@ -146,10 +156,7 @@ function ChatPageInner() {
                       ? {
                           ...m,
                           content: m.content || 'Here are the results:',
-                          metadata: {
-                            component: event.component,
-                            data: event.data,
-                          },
+                          metadata: { component: event.component, data: event.data },
                         }
                       : m
                   )
@@ -157,14 +164,10 @@ function ChatPageInner() {
                 break;
 
               case 'confirmation':
-                setPendingTx({
-                  txId: event.txId,
-                  details: event.data || {},
-                });
+                setPendingTx({ txId: event.txId, details: event.data || {} });
                 break;
 
               case 'tool_call':
-                // Show as typing indicator or update content
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantId && !m.content
@@ -177,17 +180,13 @@ function ChatPageInner() {
               case 'error':
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === assistantId
-                      ? { ...m, content: `❌ ${event.content}` }
-                      : m
+                    m.id === assistantId ? { ...m, content: `❌ ${event.content}` } : m
                   )
                 );
                 break;
 
               case 'done':
-                if (event.conversationId) {
-                  setConversationId(event.conversationId);
-                }
+                if (event.conversationId) setConversationId(event.conversationId);
                 break;
             }
           } catch {
@@ -211,7 +210,6 @@ function ChatPageInner() {
     }
   };
 
-  // Keyboard shortcut: Enter to send, Shift+Enter for newline
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -219,32 +217,26 @@ function ChatPageInner() {
     }
   };
 
-  // Confirm or reject pending transaction
   const handleConfirmTx = async (confirmed: boolean) => {
     if (!pendingTx) return;
-
     try {
       const res = await fetch(`${API_BASE}/transaction/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pendingTxId: pendingTx.txId,
-          confirmed,
-        }),
+        body: JSON.stringify({ pendingTxId: pendingTx.txId, confirmed }),
       });
-
       const result = await res.json();
-
-      const statusMsg: Message = {
-        id: `tx-${Date.now()}`,
-        role: 'assistant',
-        content: confirmed
-          ? `✅ Transaction broadcast!\n\n**Hash:** \`${result.txHash}\`\n\n[View on Etherscan](${result.explorerUrl})`
-          : '❌ Transaction cancelled.',
-        timestamp: new Date().toISOString(),
-      };
-
-      setMessages((prev) => [...prev, statusMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `tx-${Date.now()}`,
+          role: 'assistant',
+          content: confirmed
+            ? `✅ Transaction broadcast!\n\n**Hash:** \`${result.txHash}\`\n\n[View on Etherscan](${result.explorerUrl})`
+            : '❌ Transaction cancelled.',
+          timestamp: new Date().toISOString(),
+        },
+      ]);
     } catch (error: unknown) {
       setMessages((prev) => [
         ...prev,
@@ -260,7 +252,6 @@ function ChatPageInner() {
     }
   };
 
-  // New chat
   const handleNewChat = () => {
     setMessages([]);
     setConversationId(null);
@@ -281,12 +272,12 @@ function ChatPageInner() {
         <Sidebar
           conversationId={conversationId}
           onNewChat={handleNewChat}
+          onSelectConversation={loadConversation}
           onClose={() => setSidebarOpen(false)}
           walletAddress={address}
         />
       </div>
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -305,15 +296,23 @@ function ChatPageInner() {
             <Menu className="w-5 h-5 text-(--accent-primary)" />
           </button>
           <Zap className="w-5 h-5 text-(--text-secondary)" />
-          <span className="text-sm font-medium text-(--text-secondary)">
-            ChainPilot AI
-          </span>
+          <span className="text-sm font-medium text-(--text-secondary)">ChainPilot AI</span>
         </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="max-w-3xl mx-auto space-y-6">
-            {messages.length === 0 && (
+
+            {/* Loading history indicator */}
+            {isLoadingHistory && (
+              <div className="flex items-center justify-center gap-2 py-8 text-(--text-secondary)">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Loading conversation...</span>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {messages.length === 0 && !isLoadingHistory && (
               <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
                 <div className="w-16 h-16 rounded-2xl bg-(--bg-secondary)/10 flex items-center justify-center mb-6">
                   <Zap className="w-8 h-8 text-(--text-secondary)" />
@@ -331,10 +330,7 @@ function ChatPageInner() {
                   ].map((prompt, i) => (
                     <button
                       key={i}
-                      onClick={() => {
-                        setInput(prompt);
-                        inputRef.current?.focus();
-                      }}
+                      onClick={() => { setInput(prompt); inputRef.current?.focus(); }}
                       className="glass-card p-3 text-left text-sm text-(--text-secondary) hover:text-foreground transition"
                     >
                       <span className="text-(--text-secondary) mr-1">→</span> {prompt}
@@ -349,15 +345,13 @@ function ChatPageInner() {
             ))}
 
             {/* Typing indicator */}
-            {isStreaming &&
-              messages.length > 0 &&
-              !messages[messages.length - 1]?.content && (
-                <div className="flex items-center gap-2 px-4 py-3">
-                  <div className="typing-dot" />
-                  <div className="typing-dot" />
-                  <div className="typing-dot" />
-                </div>
-              )}
+            {isStreaming && messages.length > 0 && !messages[messages.length - 1]?.content && (
+              <div className="flex items-center gap-2 px-4 py-3">
+                <div className="typing-dot" />
+                <div className="typing-dot" />
+                <div className="typing-dot" />
+              </div>
+            )}
 
             <div ref={messagesEndRef} />
           </div>
@@ -375,10 +369,7 @@ function ChatPageInner() {
                 placeholder="Ask about wallets, transactions, tokens, DeFi..."
                 rows={1}
                 className="flex-1 bg-transparent resize-none text-sm text-foreground placeholder:text-(--text-secondary) outline-none max-h-32 leading-relaxed"
-                style={{
-                  minHeight: '24px',
-                  height: 'auto',
-                }}
+                style={{ minHeight: '24px', height: 'auto' }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
                   target.style.height = 'auto';
@@ -389,14 +380,11 @@ function ChatPageInner() {
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || isStreaming}
-                className={`
-                  p-2 rounded-lg transition
-                  ${
-                    input.trim() && !isStreaming
-                      ? 'bg-(--bg-secondary) hover:bg-(--bg-tertiary)/80 text-white'
-                      : 'bg-(--bg-secondary) text-(--text-secondary) cursor-not-allowed'
-                  }
-                `}
+                className={`p-2 rounded-lg transition ${
+                  input.trim() && !isStreaming
+                    ? 'bg-(--bg-secondary) hover:bg-(--bg-tertiary)/80 text-white'
+                    : 'bg-(--bg-secondary) text-(--text-secondary) cursor-not-allowed'
+                }`}
               >
                 {isStreaming ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
